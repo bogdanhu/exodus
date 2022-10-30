@@ -10,6 +10,7 @@ function toggleHide(elementId) {
 
 
 
+
 $(document).ready(function(){
 
  $('#ButonListaDevize').click(function(){
