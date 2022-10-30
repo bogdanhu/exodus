@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <head>
+         <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+<link rel="manifest" href="/static/site.webmanifest">
+<link rel="mask-icon" href="/static/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+        <!-- Bootstrap CSS -->
+         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+
+          <!-- <link href="static/fontawesome-free-5.15.4-web/css/all.css" rel="stylesheet"> load all styles -->
+         <link href="https://kit-pro.fontawesome.com/releases/v5.15.1/css/pro.min.css" rel="stylesheet">
+         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+
+<script>
+    {{js|safe}}
+</script>
+
+     </head>
+    <meta charset="UTF-8">
+    <title>Info Dosar {{dosar}} </title>
+</head>
+<body>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+  <i class="fa fa-sync"  aria-hidden="true" >urca datele in odoo si fa oferta</i>
+</button>
+
+
+<!-- Button trigger modal -->
+<button id="ButonListaDevize" type="button" class="btn btn-warning" data-toggle="modal" data-target="#exampleModal2"  data-id="{{ dosar }}" data-postid="{{  dosar }}">
+<i  class="fas fa-list-ol" aria-hidden="true" >  Lista Devize Google</i>
+</button>
+
+<a  class="btn btn-info" href="/">Go back</a>
+<!-- _anchor='DateFolder',DateFolder=DateFolder-->
+<a href="{{ url_for('deviz', deviz=dosar, _anchor='DateFolder') }}" class="btn btn-dark" target="_blank" rel="noopener noreferrer">Genereaza deviz pe drive</a>
+<br/>
+<h2>Studiez datele din dosarul {{dosar|trim}}
+    <button class="btn btn-primary btn-sm pull-right" type="button" data-toggle="collapse"
+     data-target="#DateDosar"          aria-expanded="false" aria-controls="DateDosar"><i
+            class="fa fa-plus-square" aria-hidden="true"></i> Show details </button></h2>
+{% if succes %}
+<div class="alert alert-success" role="alert">
+  Succes! Am urcat datele pe odoo
+<br/>
+<a href="http://forta.helpan.ro/{{OdooURL}}" target="_blank">Link catre Oferta Odoo </a>
+</div>
+{% endif %}
+
+<div id="DateDosar" class="collapse">
+    {% if dosar %}
+ Avem dosarul {{ dosar }} cu calea {{ DateFolder }}!
+<br/>{{ observatii }}
+    <br/>
+    <form>
+        <label>Referinta:
+            <input name="referinta"/>
+        </label>
+    </form>
+{% else %}
+ Nu avem dosar
+{% endif %}
+
+</div>
+<table class="table table-dark table-striped table-hover" id="consolidare">
+    <thead>
+    <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Nume</th>
+        <th scope="col">UoM</th>
+        <th scope="col">NrBucati</th>
+        <th scope="col">Pret Unitar</th>
+        <th scope="col">Pret Total</th>
+    </tr>
+    </thead>
+    {% if dosar %}
+ {% set totals = [] %}
+{% for item in Devize %}
+    <tr scope="row" class="bg-warning collapse.show" id="multiCollapseExample2">
+        {% set rowloop = loop %}
+    <td>{{ loop.index }}.0</td><td><a href="{{ item.CaleFisier }}">{{ item.nume }}</a></td><td>{{item.UoM}}</td><td>{{ item
+            .NrBuc}}</td><td>
+        {{ item.pret}}
+        €</td>
+        <td>{{ '%0.2f' | format(item.pret * item.NrBuc)}} €</td>
+         {% if totals.append(item.pret * item.NrBuc) %} {% endif %}
+
+    </tr>
+
+        {% for itemReper in item.Repere %}
+            <tr scope="row"  id="multiCollapseExample1" class="collapse.show">
+                {% set IDIMagine= (rowloop.index+ loop.index) %}
+                <td>{{ rowloop.index }}.{{ loop.index}}</td>
+                <td><a href="#"  data-toggle="popover" data-img="/{{ itemReper.CalePozaPNGServer }}"
+                       title="{{itemReper.Grosime}} x {{itemReper.Latime}} x {{itemReper.Lungime}} || {{
+                    itemReper.nume}} || Greutate: {{itemReper.MasaEfectiva}} kg " >{{
+                    itemReper.nume}}</a>
+
+                    </td>
+                <td>buc</td>
+                <td>{{ itemReper.NrBuc}}</td>
+                <td>{{ itemReper.pret}} €</td>
+                <td>{{ '%0.2f' | format(itemReper.pret * itemReper.NrBuc)}} € </td>
+
+            </tr>
+        {% endfor %}
+
+    {% endfor %}
+
+{% endif %}
+    <tr>
+        <td colspan="3">&nbsp;</td>
+        <td>{{ '%0.2f' | format(Devize |  sum(attribute='pret') )}}  €</td>
+        <td> Total:  {{ '%0.2f' | format(totals | sum) }}  €</td>
+    </tr>
+</table>
+
+<p>
+  <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="true"
+     aria-controls="multiCollapseExample1"><i
+            class="fa fa-plus-square" aria-hidden="false"></i> Toggle Reperele</a>
+  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2"
+          aria-expanded="true" aria-controls="multiCollapseExample2"><i
+            class="fa fa-plus-square" aria-hidden="false"></i> Toggle Seturile</button>
+    <input id="copy_btn" type="button" value="copy">
+</p>
+
+
+<script>
+    $(document).ready(function(){
+	 $('[data-toggle="popover"]').popover({
+          //trigger: 'focus',
+		  trigger: 'hover',
+          html: true,
+          content: function () {
+				return '<img class="img-fluid" src="'+$(this).data('img') + '" />';
+          },
+          title: 'Toolbox'
+    })
+});
+
+    var copyBtn = document.querySelector('#copy_btn');
+ copyBtn.addEventListener('click', function () {
+  var urlField = document.querySelector('#consolidare');
+
+  // create a Range object
+  var range = document.createRange();
+  // set the Node to select the "range"
+  range.selectNode(urlField);
+  // add the Range to the set of window selections
+  window.getSelection().addRange(range);
+
+  // execute 'copy', can't 'cut' in this case
+  document.execCommand('copy');
+}, false);
+
+</script>
+
+
+
+<!-- Lista cu Devize Google Spreadsheet -->
+<div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Lista cu devize pe drive ale {{ dosar }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+             <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Inchide</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="search">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Urca Datele pe Odoo</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Dupa ce vei selecta optiunea, vei putea intra direct in oferta
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <a href="?gotoOdoo=True&seturi=False" class="btn btn-info" role="button" id="urcaRepere">Urca Repere</a>
+
+
+          <a href="?gotoOdoo=True&seturi=True" class="btn btn-danger" role="button">Urca Seturi</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</body>
+</html>
